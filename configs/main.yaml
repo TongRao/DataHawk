@@ -1,0 +1,40 @@
+# App Settings
+app:
+  name: "Data Doorkeeper"
+  version: 1.0
+  debug: false
+  supported_locales: ["en", "cn"]
+
+# sample schema
+table_schema:
+  required_columns:
+    - name: "ID"
+      data_type: "integer"
+      allows_empty: false
+    - name: "Name"
+      data_type: "string"
+      allows_empty: false
+    - name: "Email"
+      data_type: "string"
+      allows_empty: true
+    - name: "Signup Date"
+      data_type: "date"
+      allows_empty: false
+    - name: "Last Purchase"
+      data_type: "date"
+      allows_empty: true
+    - name: "Total Spent"
+      data_type: "float"
+      allows_empty: true
+  optional_columns:
+    - name: "Referral Code"
+      data_type: "string"
+      allows_empty: true
+    - name: "Membership Level"
+      data_type: "string"
+      allows_empty: true
+  constraints:
+    - column: "Email"
+      regex: "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$"
+    - column: "ID"
+      unique: true
