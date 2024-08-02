@@ -1,25 +1,26 @@
 from pathlib import Path
 import pandas as pd
 
-def initialize_directories():
+def initialize_directories(root):
     """
     初始化所需的文件夹
     """
     # 基础文件夹
-    ROOT_PATH = Path(__file__).resolve().parent
-    paths = {
-        "ROOT_PATH": ROOT_PATH,
-        "DATA_PATH": ROOT_PATH / "data",
-        "RESULT_ROOT_PATH": ROOT_PATH / "result",
-        "TEMPLATE_PATH": ROOT_PATH / "templates",
-        "LOG_PATH": ROOT_PATH / "log",
-        "CONFIG_PATH": ROOT_PATH / "config",
+    ROOT_PATH = Path(root).resolve().parent
+    ROOT_PATH = ROOT_PATH.parent if ROOT_PATH.name == "src" else ROOT_PATH
+
+    dirs = {
+        "root": ROOT_PATH,
+        "data": ROOT_PATH / "data",
+        "result": ROOT_PATH / "result",
+        "yashin": ROOT_PATH / "yashin",
+        "log": ROOT_PATH / "log",
+        "test": ROOT_PATH / "test",
     }
     # 创建文件夹
-    for path in paths:
-        if path.endswith("_PATH"):
-            paths[path].mkdir(exist_ok=True, parents=True)
-    return paths
+    for path in dirs:
+        dirs[path].mkdir(exist_ok=True, parents=True)
+    return dirs
 
 def get_general_column_type(dtype):
     """

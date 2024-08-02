@@ -10,4 +10,7 @@ Thumbs.db
 test_*.*
 test.toml
 
+/log
 /dev
+/test
+/yashin

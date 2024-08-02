@@ -1,7 +1,9 @@
 import pandas as pd
 import toml, os
 from pathlib import Path
-from src.utils import initialize_directories, get_general_column_type
+from utils import initialize_directories, get_general_column_type
+from exzlogger import initialize_logger
+
 
 class LoadDataError(Exception):
     def __init__(self, message):
@@ -25,8 +27,11 @@ class DoorKeeperValidationError(Exception):
 
 
 class DoorKeeper:
-    def __init__(self, data_source, template_name, force_create=False, allow_empty_cols=[], required_cols=[], col_aliases={}) -> None:
-        self.data_source = data_source
+    def __init__(self, data_source, template_name, logger=None, force_create=False, 
+                 template_dir="yashin", allow_empty_cols=[], required_cols=[], col_aliases={}) -> None:
+        self.logger = logger if logger else initialize_logger(stdout_level='INFO', file_level='DEBUG', log_file="log.log")
+        self.data_source = str(data_source)
+        self.template_dir = str(template_dir)
         self.template_name = template_name
         self.allow_empty_cols = allow_empty_cols
         self.required_cols = required_cols
@@ -36,6 +41,7 @@ class DoorKeeper:
         self.data_origin = self.load_data()
         self.data = self.data_origin.copy()
         self.template_list = self._load_template_list()
+        Path(self.template_dir).mkdir(exist_ok=True, parents=True)
         
         # check if data template exists, if not create one
         if self.template_name in self.template_list['templates'] and not force_create:
@@ -54,9 +60,9 @@ class DoorKeeper:
         """
         Check if the template list exists
         """
-        if not os.path.exists(Path("templates") / "template_list.toml"):
+        if not os.path.exists(Path(self.template_dir) / "template_list.toml"):
             template_list = {"templates": []}
-            with open(Path("templates") / "template_list.toml", "w") as f:
+            with open(Path(self.template_dir) / "template_list.toml", "w") as f:
                 toml.dump(template_list, f)
 
 
@@ -65,7 +71,7 @@ class DoorKeeper:
         TODO: Add Exceptions
         """
         self._check_template_list_exists()
-        with open(Path("templates") / "template_list.toml", "r") as f:
+        with open(Path(self.template_dir) / "template_list.toml", "r") as f:
             template_list = toml.load(f)
         return template_list
     
@@ -107,7 +113,7 @@ class DoorKeeper:
         Load data template from a toml file if it exists
         """
         try:
-            with open(Path("templates") / f"{self.template_name}.toml", "r") as f:
+            with open(Path(self.template_dir) / f"{self.template_name}.toml", "r") as f:
                 template = toml.load(f)
             return template
         except Exception as e:
@@ -130,12 +136,13 @@ class DoorKeeper:
                 template_rules[col] = col_info
 
             # add current tepmplate to template list
-            self.template_list['templates'].append(self.template_name)
-            with open(Path("templates") / "template_list.toml", 'w') as f:
-                toml.dump(self.template_list, f)
+            if self.template_name not in self.template_list['templates']:
+                self.template_list['templates'].append(self.template_name)
+                with open(Path(self.template_dir) / "template_list.toml", 'w') as f:
+                    toml.dump(self.template_list, f)
 
             # Convert the template dictionary to TOML format and write to file
-            with open(Path("templates") / f"{self.template_name}.toml", 'w') as toml_file:
+            with open(Path(self.template_dir) / f"{self.template_name}.toml", 'w') as toml_file:
                 toml.dump(template_rules, toml_file)
             return template_rules
         except Exception as e:
@@ -149,7 +156,7 @@ class DoorKeeper:
         validation_errors = []
 
         for col, col_info in self.data_template.items():
-            # 用标准列名替换所有别名
+            # relace column aliases with standard column names
             alias_mapping = {}
             aliases = col_info.get('alias', [])
             for alias in aliases:
@@ -157,22 +164,22 @@ class DoorKeeper:
             alias_mapping[col] = col
             self.data = self.data.rename(columns=alias_mapping)
 
-            # 检查列是否存在
+            # check for missing columns
             if col not in self.data.columns:
                 if col_info.get('required', False):
                     validation_errors.append(f"Missing required column: {col}")
                 continue
 
-            # 检查数据类型
+            # check for empty columns
             general_type = get_general_column_type(self.data[col].dtype)
             if general_type != col_info['dtype']:
                 validation_errors.append(f"Column <{col}> has wrong type: expected <{col_info['dtype']}>, found <{general_type}>")
 
-            # 检查空值
+            # check for null values
             if not col_info['allow_null'] and self.data[col].isnull().any():
                 validation_errors.append(f"Column <{col}> contains null values but is not allowed")
 
-        # 检查是否有多余的列
+        # check for unexpected columns
         for col in self.data.columns:
             if col not in self.data_template:
                 validation_errors.append(f"Unexpected column: {col}")
@@ -181,5 +188,15 @@ class DoorKeeper:
         if validation_errors:
             raise DoorKeeperValidationError(f"Invalid data <{self.data_source}> with template <{self.template_name}>: \n - " + "\n - ".join(validation_errors))
         else:
-            print("Data is valid!")
+            self.logger.info("[_validate_data]: Data is valid!")
 
+
+if __name__ == "__main__":
+    dirs = initialize_directories()
+    logger = initialize_logger(stdout_level='INFO', file_level='DEBUG', log_file=dirs['log'] / "log.log")
+    defect = DoorKeeper(data_source=dirs['test'] / "配变重过载.xlsx", 
+                        template_name="配变重过载", 
+                        logger=logger,
+                        template_dir=dirs['yashin'])
+    print(defect.data.columns)
+    

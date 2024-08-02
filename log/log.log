@@ -245,3 +245,9 @@ INFO     [2024-02-29 16:09:01] [src.Task.prepare_datasets]: Successfully checked
 INFO     [2024-02-29 16:09:01] [src.Task.prepare_datasets]: Successfully checked template <sample_dataset_02>, <2> files passed.
 INFO     [2024-02-29 16:09:01] [src.Task.prepare_datasets]: Successfully checked template <sample_dataset_03>, <1> files passed.
 ERROR    [2024-02-29 16:09:01] [src.Task.prepare_datasets]: Critical error found, ending the program.
+INFO     [2024-06-03 14:05:35] test
+INFO     [2024-06-03 14:08:40] test
+INFO     [2024-06-03 14:14:00] test
+INFO     [2024-06-03 14:14:52] test
+INFO     [2024-06-03 16:09:03] Data is valid!
+INFO     [2024-06-03 16:12:49] [_validate_data]: Data is valid!
