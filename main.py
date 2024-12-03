@@ -167,7 +167,7 @@ def informer(errors: list, language: str='en'):
         print("[informer]: Data is valid!") if language == 'en' else print("[informer]: 数据校验通过!")
 
 
-def main(data_path: str|Path, task: str, template_dir: str|Path=Path('datahawk'), fix_errors: bool=False, override: bool=False, language: str='en'):
+def hawk_check(data_path: str|Path, task: str, template_dir: str|Path=Path('datahawk'), fix_errors: bool=False, override: bool=False, language: str='en'):
     """
     Main function to load data, create template, validate data and save template
 
@@ -183,6 +183,12 @@ def main(data_path: str|Path, task: str, template_dir: str|Path=Path('datahawk')
         - data <pd.DataFrame>: The data after fixing errors
         - validation_errors <list>: List of validation errors
     """
+    # check path type, convert string into Path
+    if isinstance(data_path, str):
+        data_path = Path(data_path)
+    if isinstance(template_dir, str):
+        template_dir = Path(template_dir)
+
     data = load_data(data_path)
 
     # check if template exists, if not create one else load the existing template
@@ -200,6 +206,4 @@ def main(data_path: str|Path, task: str, template_dir: str|Path=Path('datahawk')
 # if __name__ == "__main__":
 #     data_path = Path("test") / "test2.csv"
 #     task = "test2"
-
-#     main(data_path=data_path, task=task, template_dir=Path("datahawk"), fix_errors=False, override=False, language='en')
-
+#     hawk_check(data_path=data_path, task=task, template_dir="datahawk", fix_errors=False, override=False, language='en')
