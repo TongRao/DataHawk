@@ -9,8 +9,10 @@ ehthumbs.db
 Thumbs.db
 test_*.*
 test.toml
+*.ipynb
 
 /log
 /dev
 /test
-/yashin
+/datahawk
+/result

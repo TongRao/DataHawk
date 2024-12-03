@@ -27,9 +27,9 @@ def get_general_column_type(dtype):
     Define the general type of a column based on its dtype
     """
     if pd.api.types.is_numeric_dtype(dtype):
-        return 'numeric'
+        return 'number'
     elif pd.api.types.is_string_dtype(dtype):
-        return 'text'
+        return 'string'
     elif pd.api.types.is_bool_dtype(dtype):
         return 'bool'
     elif pd.api.types.is_datetime64_any_dtype(dtype):
